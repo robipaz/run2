@@ -19,13 +19,13 @@ COOKIE_VALUE=LuKUXUJ02tm7kpsquDL8%2FtlZjevkYzOkNwr2b51DF%2B2ZRtGdmPiY%2B7Iz3B6gy
 
 # Main-phase scheduling (seconds):
 # How many seconds BEFORE the target time to start launching the main requests.
-SEND_START_BEFORE_SECONDS=36
+SEND_START_BEFORE_SECONDS=3
 
 # How often to launch a NEW request (seconds). Requests are launched in parallel.
-INTERVAL_SECONDS=1.0
+INTERVAL_SECONDS=0.05
 
 # How long (seconds) to keep launching main requests before stopping.
-RUN_LIMIT_SECONDS=3
+RUN_LIMIT_SECONDS=4
 
 # Phase shift (ms) - subtract this many milliseconds from the send moment.
-FEEDTIME_MS=1400
+FEEDTIME_MS=3000
