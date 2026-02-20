@@ -15,11 +15,11 @@ TARGET_ISRAEL_TIME=18:00
 SIM_MIDNIGHT_AFTER_SECONDS=120
 
 # Cookie value for 'new_bbs_serviceToken'
-COOKIE_VALUE=9CRa00QsgS3tiU9N%2BH054ReU0Pn7%2FwX9wzzhcYHaJiyTePDZL9bVcwdsXJqw5PQjkXoYHU0ELgzW%2BREN4rB%2BadDjXcwsRv02ts83imBsIMGI0fhSXjfbpgQC8Fu4Iw6uzqBAByQXVVzUqD3qTzJVwRwEApI9gHZ6RKovWQN7e%2Fo%3D
+COOKIE_VALUE=LuKUXUJ02tm7kpsquDL8%2FtlZjevkYzOkNwr2b51DF%2B2ZRtGdmPiY%2B7Iz3B6gycneTAN3LqATYA7NUhG%2F7%2BLwcOsyaRx%2BLblfxvIOqjSCX0fFwdlziKwPb50BDcQ08bJSAya7moCu54T%2Fr0ncvHJBvomS%2FpKQQA%2FCkme%2BOshsvKM%3D
 
 # Main-phase scheduling (seconds):
 # How many seconds BEFORE the target time to start launching the main requests.
-SEND_START_BEFORE_SECONDS=3600
+SEND_START_BEFORE_SECONDS=36
 
 # How often to launch a NEW request (seconds). Requests are launched in parallel.
 INTERVAL_SECONDS=1.0
