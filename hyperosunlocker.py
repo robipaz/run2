@@ -50,6 +50,10 @@ col_rb = Style.BRIGHT + Fore.RED
 #
 CONFIG_FILE = "config.txt"
 
+# Feedtime/phase-shift in milliseconds (original script default ~1400ms).
+# Used to offset the send moment slightly earlier than the target.
+FEEDTIME_MS = 1400.0
+
 def read_config(path: str = CONFIG_FILE) -> dict:
     cfg = {
         "SIMULATION": False,
@@ -71,6 +75,9 @@ def read_config(path: str = CONFIG_FILE) -> dict:
 
         # How long to keep launching requests in the main phase before stopping.
         "RUN_LIMIT_SECONDS": 3.0,
+
+        # Milliseconds to subtract as phase shift.
+        "FEEDTIME_MS": 1400.0,
 
         # Backward-compat (old keys):
         "SIM_MINUTE": 0,
@@ -115,6 +122,11 @@ def read_config(path: str = CONFIG_FILE) -> dict:
                 elif k == "INTERVAL_SECONDS":
                     try:
                         cfg["INTERVAL_SECONDS"] = float(v)
+                    except ValueError:
+                        pass
+                elif k == "FEEDTIME_MS":
+                    try:
+                        cfg["FEEDTIME_MS"] = float(v)
                     except ValueError:
                         pass
                 elif k == "RUN_LIMIT_SECONDS":
@@ -415,10 +427,38 @@ def check_unlock_status(session, cookie_value, device_id):
 
         response_data = json.loads(response.data.decode("utf-8"))
         response.release_conn()
-
+        # Note: The API sometimes returns code=100004 transiently (rate-limit / auth refresh / geo edge),
+        # even when the cookie is still valid. Treat it as an auth warning and retry a few times before failing.
         if response_data.get("code") == 100004:
-            print("[Error] Expired Cookie ... try again.")
-            exit()
+            msg = str(response_data.get("msg", "")).strip()
+            print(col_r + f"[Auth Warning] code=100004 from state endpoint. msg={msg!r}. Retrying..." + Fore.RESET)
+            for attempt in range(1, 4):
+                time.sleep(attempt)  # 1s, 2s, 3s
+                response2 = session.make_request("GET", url, headers=headers)
+                if response2 is None:
+                    continue
+                try:
+                    response_data2 = json.loads(response2.data.decode("utf-8"))
+                except Exception:
+                    response_data2 = {"_raw_text": response2.data.decode("utf-8", errors="replace")}
+                finally:
+                    try:
+                        response2.release_conn()
+                    except Exception:
+                        pass
+
+                if response_data2.get("code") != 100004:
+                    response_data = response_data2
+                    break
+
+                msg2 = str(response_data2.get("msg", "")).strip()
+                print(col_r + f"[Auth Warning] Still code=100004 (attempt {attempt}/3). msg={msg2!r}" + Fore.RESET)
+
+            if response_data.get("code") == 100004:
+                print(col_r + "[Error] Authentication failed (code=100004) after retries. "
+                      "This can mean cookie invalid/blocked or the endpoint requires additional cookies." + Fore.RESET)
+                print(col_r + f"[Debug] Last state response: {json.dumps(response_data, ensure_ascii=False)}" + Fore.RESET)
+                return False
 
         data = response_data.get("data", {})
         is_pass = data.get("is_pass")
@@ -556,6 +596,9 @@ def main():
     interval_seconds = float(cfg_local.get("INTERVAL_SECONDS") or INTERVAL_SECONDS)
     run_limit_seconds = float(cfg_local.get("RUN_LIMIT_SECONDS") or 3.0)
 
+    global FEEDTIME_MS
+    FEEDTIME_MS = float(cfg_local.get("FEEDTIME_MS") or FEEDTIME_MS)
+
     # Backward-compat (legacy simulation minute)
     sim_minute_legacy = int(cfg_local.get("SIM_MINUTE") or 0)
 
@@ -677,10 +720,12 @@ def main():
                         print(col_g + "[Status]: " + Fore.RESET + "Request approved, checking status")
                         check_unlock_status(session, cookie_value, device_id)
                         return
-
-                # For non-quota responses, keep the existing visibility
+                # code=100004 may appear transiently; don't label it as "expired" immediately.
                 if code_val == 100004:
-                    print(col_r + "[Error] Expired Cookie ... try again." + Fore.RESET)
+                    msg = str(json_response.get("msg", "")).strip()
+                    print(col_r + f"[Auth Warning] code=100004 from bl-auth. msg={msg!r}. "
+                                  "Continuing (it may be transient)." + Fore.RESET)
+                    print(col_r + f"[Debug] bl-auth response: {json.dumps(json_response, ensure_ascii=False)}" + Fore.RESET)
                     return
 
                 # Print generic status for debugging

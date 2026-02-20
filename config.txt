@@ -26,3 +26,6 @@ INTERVAL_SECONDS=1.0
 
 # How long (seconds) to keep launching main requests before stopping.
 RUN_LIMIT_SECONDS=3
+
+# Phase shift (ms) - subtract this many milliseconds from the send moment.
+FEEDTIME_MS=1400
