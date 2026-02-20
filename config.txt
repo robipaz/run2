@@ -19,7 +19,7 @@ COOKIE_VALUE=LuKUXUJ02tm7kpsquDL8%2FtlZjevkYzOkNwr2b51DF%2B2ZRtGdmPiY%2B7Iz3B6gy
 
 # Main-phase scheduling (seconds):
 # How many seconds BEFORE the target time to start launching the main requests.
-SEND_START_BEFORE_SECONDS=1700
+SEND_START_BEFORE_SECONDS=2
 
 # How often to launch a NEW request (seconds). Requests are launched in parallel.
 INTERVAL_SECONDS=0.1
