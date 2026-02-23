@@ -28,4 +28,4 @@ INTERVAL_SECONDS=0.05
 RUN_LIMIT_SECONDS=1
 
 # Phase shift (ms) - subtract this many milliseconds from the send moment.
-FEEDTIME_MS=1
+FEEDTIME_MS=10003
